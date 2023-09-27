@@ -5,7 +5,7 @@ const Error404 = require('../errors/Error404');
 const Error403 = require('../errors/Error403');
 
 module.exports.getMovies = (req, res, next) => {
-  Movie.find({})
+  Movie.find({owner: req.user._id})
     .then((movies) => res.send({ movies }))
     .catch((err) => next(err));
 };
