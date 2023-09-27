@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { sign } = require('jsonwebtoken');
-const { Mongoose } = require('mongoose');
+const { MongooseError } = require('mongoose');
 const User = require('../models/user');
 const Error409 = require('../errors/Error409');
 const Error400 = require('../errors/Error400');
@@ -32,8 +32,11 @@ module.exports.updateUserInfo = (req, res, next) => {
       return next(new Error404('Пользователь не найден'));
     })
     .catch((err) => {
-      if (err instanceof Mongoose.Error.ValidationError) {
+      if (err instanceof MongooseError.ValidationError) {
         return next(new Error400('Некорректные данные'));
+      }
+      if (err.code === 11000) {
+        return next(new Error409('Почта уже используется'));
       }
       return next(err);
     });
@@ -54,7 +57,7 @@ module.exports.createUser = (req, res, next) => {
         .catch((err) => {
           if (err.code === 11000) {
             return next(new Error409('Пользователь уже существует'));
-          } if (err instanceof Mongoose.Error.ValidationError) {
+          } if (err instanceof MongooseError.ValidationError) {
             return next(new Error400('Некорректные данные'));
           }
           return next(err);

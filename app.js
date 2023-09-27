@@ -6,15 +6,7 @@ const { errors } = require('celebrate');
 
 require('dotenv').config();
 
-const { PORT = 3000 } = process.env;
-
 const app = express();
-
-const limiter = require('express-rate-limit')({
-  windowMs: 200,
-  max: 100,
-  message: 'Превышено количество запросов',
-});
 
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
@@ -23,11 +15,12 @@ const corsChecker = require('./middlewares/corsChecker');
 
 app.use(requestLogger);
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
+mongoose.connect(require('./utils/config').dataMovies, {
   useNewUrlParser: true,
 });
 
-app.use(limiter);
+app.use(require('./middlewares/limiter').limiter);
+
 app.use(helmet());
 app.use(cookieParser());
 app.use(express.json());
@@ -43,4 +36,4 @@ app.use(errors());
 
 app.use(handleError);
 
-app.listen(PORT, () => {});
+app.listen(require('./utils/config').PORT, () => {});
